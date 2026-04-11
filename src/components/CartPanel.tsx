@@ -145,9 +145,10 @@ const CartPanel = ({
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={onCheckout}
-                    className="w-full py-4 rounded-full bg-primary text-primary-foreground font-body font-bold text-lg shadow-lg hover:opacity-90 transition-opacity"
+                    disabled={isLoading}
+                    className="w-full py-4 rounded-full bg-primary text-primary-foreground font-body font-bold text-lg shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
-                    Place Order
+                    {isLoading ? "Placing order..." : "Place Order"}
                   </motion.button>
                 </div>
               </>

@@ -11,6 +11,8 @@ interface CartPanelProps {
   onUpdateQuantity: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
   onCheckout: () => void;
+  isLoading?: boolean;
+}
 }
 
 const CartPanel = ({

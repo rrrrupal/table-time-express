@@ -13,7 +13,6 @@ interface CartPanelProps {
   onCheckout: () => void;
   isLoading?: boolean;
 }
-}
 
 const CartPanel = ({
   items,
@@ -24,6 +23,7 @@ const CartPanel = ({
   onUpdateQuantity,
   onRemove,
   onCheckout,
+  isLoading,
 }: CartPanelProps) => {
   return (
     <>

@@ -1,11 +1,15 @@
 import { useState, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import CategoryFilter from "@/components/CategoryFilter";
 import MenuItemCard from "@/components/MenuItemCard";
 import CartPanel from "@/components/CartPanel";
 import OrderConfirmation from "@/components/OrderConfirmation";
+import Navbar from "@/components/Navbar";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { categories, menuItems } from "@/data/menu";
 import { toast } from "sonner";
 
@@ -13,7 +17,10 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
   const cart = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const filteredItems = useMemo(
     () =>
@@ -28,9 +35,51 @@ const Index = () => {
     toast.success(`${item.name} added to cart`, { duration: 1500 });
   };
 
-  const handleCheckout = () => {
-    setCartOpen(false);
-    setOrderConfirmed(true);
+  const handleCheckout = async () => {
+    if (!user) {
+      setCartOpen(false);
+      toast.info("Please sign in to place an order");
+      navigate("/auth");
+      return;
+    }
+
+    setPlacingOrder(true);
+    try {
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          total_amount: cart.total + 3.99,
+          delivery_fee: 3.99,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cart.items.map((item) => ({
+        order_id: order.id,
+        menu_item_id: item.id,
+        menu_item_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      setCartOpen(false);
+      setOrderConfirmed(true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to place order");
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   const handleOrderClose = () => {
@@ -40,6 +89,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background font-body">
+      <Navbar />
       <HeroSection />
 
       <main id="menu" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -81,6 +131,7 @@ const Index = () => {
         onUpdateQuantity={cart.updateQuantity}
         onRemove={cart.removeItem}
         onCheckout={handleCheckout}
+        isLoading={placingOrder}
       />
 
       {orderConfirmed && (

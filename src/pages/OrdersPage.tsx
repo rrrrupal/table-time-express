@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Clock, Package } from "lucide-react";
+import { ArrowLeft, Clock, Package, XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -28,6 +28,24 @@ const statusSteps = ["pending", "preparing", "ready", "delivered"];
 const OrdersPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const handleCancel = async (orderId: string) => {
+    setCancellingId(orderId);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: "cancelled" as const })
+        .eq("id", orderId);
+      if (error) throw error;
+      toast.success("Order cancelled");
+      queryClient.invalidateQueries({ queryKey: ["orders", user?.id] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to cancel order");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders", user?.id],
@@ -142,9 +160,21 @@ const OrdersPage = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-3 pt-3 border-t border-border flex justify-between font-display font-bold text-foreground">
+                    <div className="mt-3 pt-3 border-t border-border flex items-center justify-between font-display font-bold text-foreground">
                       <span>Total</span>
-                      <span className="text-primary">${Number(order.total_amount).toFixed(2)}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-primary">${Number(order.total_amount).toFixed(2)}</span>
+                        {order.status === "pending" && (
+                          <button
+                            onClick={() => handleCancel(order.id)}
+                            disabled={cancellingId === order.id}
+                            className="flex items-center gap-1 text-xs font-body font-medium text-destructive hover:text-destructive/80 transition-colors disabled:opacity-50"
+                          >
+                            <XCircle size={14} />
+                            {cancellingId === order.id ? "Cancelling..." : "Cancel"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 );

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import CategoryFilter from "@/components/CategoryFilter";
 import MenuItemCard from "@/components/MenuItemCard";
-import CartPanel from "@/components/CartPanel";
+import CartPanel, { PaymentMethod } from "@/components/CartPanel";
 import OrderConfirmation from "@/components/OrderConfirmation";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/hooks/useCart";

@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, X, Minus, Plus, Trash2 } from "lucide-react";
+import { ShoppingCart, X, Minus, Plus, Trash2, MapPin, CreditCard, Banknote, Wallet } from "lucide-react";
 import { CartItem } from "@/types/menu";
+
+export type PaymentMethod = "card" | "cash" | "wallet";
 
 interface CartPanelProps {
   items: CartItem[];
@@ -10,9 +13,15 @@ interface CartPanelProps {
   onToggle: () => void;
   onUpdateQuantity: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
-  onCheckout: () => void;
+  onCheckout: (address: string, paymentMethod: PaymentMethod) => void;
   isLoading?: boolean;
 }
+
+const paymentOptions: { id: PaymentMethod; label: string; icon: typeof CreditCard; desc: string }[] = [
+  { id: "card", label: "Card", icon: CreditCard, desc: "Credit / Debit card" },
+  { id: "cash", label: "Cash", icon: Banknote, desc: "Cash on delivery" },
+  { id: "wallet", label: "Wallet", icon: Wallet, desc: "Digital wallet" },
+];
 
 const CartPanel = ({
   items,
@@ -25,6 +34,24 @@ const CartPanel = ({
   onCheckout,
   isLoading,
 }: CartPanelProps) => {
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [errors, setErrors] = useState<{ address?: string }>({});
+
+  const handleCheckout = () => {
+    const trimmed = address.trim();
+    if (!trimmed) {
+      setErrors({ address: "Please enter a delivery address" });
+      return;
+    }
+    if (trimmed.length < 10) {
+      setErrors({ address: "Please enter a complete address" });
+      return;
+    }
+    setErrors({});
+    onCheckout(trimmed, paymentMethod);
+  };
+
   return (
     <>
       {/* Floating cart button */}
@@ -83,6 +110,7 @@ const CartPanel = ({
             ) : (
               <>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {/* Cart items */}
                   {items.map((item) => (
                     <motion.div
                       key={item.id}
@@ -127,6 +155,62 @@ const CartPanel = ({
                       </div>
                     </motion.div>
                   ))}
+
+                  {/* Delivery address */}
+                  <div className="pt-2">
+                    <label className="flex items-center gap-2 font-body font-semibold text-foreground text-sm mb-2">
+                      <MapPin size={16} className="text-primary" />
+                      Delivery Address
+                    </label>
+                    <textarea
+                      value={address}
+                      onChange={(e) => {
+                        setAddress(e.target.value);
+                        if (errors.address) setErrors({});
+                      }}
+                      placeholder="Enter your full delivery address..."
+                      rows={2}
+                      maxLength={300}
+                      className={`w-full px-4 py-3 rounded-xl bg-secondary border font-body text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none ${
+                        errors.address ? "border-destructive" : "border-border"
+                      }`}
+                    />
+                    {errors.address && (
+                      <p className="text-destructive text-xs font-body mt-1">{errors.address}</p>
+                    )}
+                  </div>
+
+                  {/* Payment method */}
+                  <div>
+                    <label className="flex items-center gap-2 font-body font-semibold text-foreground text-sm mb-2">
+                      <CreditCard size={16} className="text-primary" />
+                      Payment Method
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {paymentOptions.map((opt) => {
+                        const Icon = opt.icon;
+                        const selected = paymentMethod === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setPaymentMethod(opt.id)}
+                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all font-body text-xs ${
+                              selected
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-secondary text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            <Icon size={20} />
+                            <span className="font-semibold">{opt.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-muted-foreground text-xs font-body mt-1.5">
+                      {paymentOptions.find((o) => o.id === paymentMethod)?.desc}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="p-6 border-t border-border space-y-4">
@@ -144,7 +228,7 @@ const CartPanel = ({
                   </div>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={onCheckout}
+                    onClick={handleCheckout}
                     disabled={isLoading}
                     className="w-full py-4 rounded-full bg-primary text-primary-foreground font-body font-bold text-lg shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                   >

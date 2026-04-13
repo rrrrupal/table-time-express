@@ -8,6 +8,7 @@ export const categories = [
   { id: "burgers", label: "Burgers", icon: "🍔" },
   { id: "desserts", label: "Desserts", icon: "🍰" },
   { id: "drinks", label: "Drinks", icon: "🥤" },
+  { id: "indian", label: "Indian", icon: "🍛" },
 ];
 
 export const menuItems: MenuItem[] = [

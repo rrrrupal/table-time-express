@@ -8,6 +8,7 @@ export const categories = [
   { id: "burgers", label: "Burgers", icon: "🍔" },
   { id: "desserts", label: "Desserts", icon: "🍰" },
   { id: "drinks", label: "Drinks", icon: "🥤" },
+  { id: "indian", label: "Indian", icon: "🍛" },
 ];
 
 export const menuItems: MenuItem[] = [
@@ -127,5 +128,55 @@ export const menuItems: MenuItem[] = [
     price: 3.99,
     category: "drinks",
     image: "https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=400&h=300&fit=crop",
+  },
+  {
+    id: "15",
+    name: "Butter Chicken",
+    description: "Tender chicken in a rich, creamy tomato-butter sauce with aromatic spices",
+    price: 17.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&h=300&fit=crop",
+    popular: true,
+  },
+  {
+    id: "16",
+    name: "Paneer Tikka Masala",
+    description: "Grilled paneer cubes in a spiced tomato-cream gravy with bell peppers",
+    price: 15.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&h=300&fit=crop",
+  },
+  {
+    id: "17",
+    name: "Lamb Biryani",
+    description: "Fragrant basmati rice layered with slow-cooked spiced lamb & saffron",
+    price: 19.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop",
+    popular: true,
+  },
+  {
+    id: "18",
+    name: "Dal Makhani",
+    description: "Slow-simmered black lentils with butter, cream & warm spices",
+    price: 13.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
+  },
+  {
+    id: "19",
+    name: "Chicken Tikka",
+    description: "Chargrilled marinated chicken pieces with mint chutney & naan",
+    price: 14.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop",
+  },
+  {
+    id: "20",
+    name: "Garlic Naan",
+    description: "Freshly baked tandoori bread brushed with garlic butter & cilantro",
+    price: 4.99,
+    category: "indian",
+    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop",
   },
 ];

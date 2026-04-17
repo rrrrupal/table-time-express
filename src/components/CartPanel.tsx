@@ -2,8 +2,21 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, X, Minus, Plus, Trash2, MapPin, CreditCard, Banknote, Wallet } from "lucide-react";
 import { CartItem } from "@/types/menu";
+import CardDetailsForm, { CardDetails } from "./CardDetailsForm";
+import {
+  isValidCardNumber,
+  isValidExpiry,
+  isValidCvv,
+  isValidCardholderName,
+} from "@/lib/cardValidation";
 
 export type PaymentMethod = "card" | "cash" | "wallet";
+
+export interface CheckoutPayload {
+  address: string;
+  paymentMethod: PaymentMethod;
+  card?: { last4: string; brand: string };
+}
 
 interface CartPanelProps {
   items: CartItem[];
@@ -13,7 +26,7 @@ interface CartPanelProps {
   onToggle: () => void;
   onUpdateQuantity: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
-  onCheckout: (address: string, paymentMethod: PaymentMethod) => void;
+  onCheckout: (payload: CheckoutPayload) => void;
   isLoading?: boolean;
 }
 
@@ -36,20 +49,70 @@ const CartPanel = ({
 }: CartPanelProps) => {
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
-  const [errors, setErrors] = useState<{ address?: string }>({});
+  const [card, setCard] = useState<CardDetails>({
+    number: "",
+    name: "",
+    expiry: "",
+    cvv: "",
+    brand: "unknown",
+  });
+  const [errors, setErrors] = useState<{
+    address?: string;
+    card?: Partial<Record<keyof CardDetails, string>>;
+  }>({});
 
   const handleCheckout = () => {
+    const newErrors: typeof errors = {};
     const trimmed = address.trim();
+
     if (!trimmed) {
-      setErrors({ address: "Please enter a delivery address" });
+      newErrors.address = "Please enter a delivery address";
+    } else if (trimmed.length < 10) {
+      newErrors.address = "Please enter a complete address";
+    }
+
+    if (paymentMethod === "card") {
+      const cardErrors: Partial<Record<keyof CardDetails, string>> = {};
+      if (!card.number.trim()) {
+        cardErrors.number = "Card number is required";
+      } else if (!isValidCardNumber(card.number)) {
+        cardErrors.number = "Invalid card number";
+      }
+      if (!isValidCardholderName(card.name)) {
+        cardErrors.name = "Enter the name on the card";
+      }
+      if (!card.expiry.trim()) {
+        cardErrors.expiry = "Required";
+      } else if (!isValidExpiry(card.expiry)) {
+        cardErrors.expiry = "Invalid or expired";
+      }
+      if (!card.cvv.trim()) {
+        cardErrors.cvv = "Required";
+      } else if (!isValidCvv(card.cvv, card.brand)) {
+        cardErrors.cvv = `Must be ${card.brand === "amex" ? 4 : 3} digits`;
+      }
+      if (Object.keys(cardErrors).length > 0) {
+        newErrors.card = cardErrors;
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-    if (trimmed.length < 10) {
-      setErrors({ address: "Please enter a complete address" });
-      return;
-    }
+
     setErrors({});
-    onCheckout(trimmed, paymentMethod);
+    onCheckout({
+      address: trimmed,
+      paymentMethod,
+      card:
+        paymentMethod === "card"
+          ? {
+              last4: card.number.replace(/\s/g, "").slice(-4),
+              brand: card.brand,
+            }
+          : undefined,
+    });
   };
 
   return (
@@ -166,7 +229,7 @@ const CartPanel = ({
                       value={address}
                       onChange={(e) => {
                         setAddress(e.target.value);
-                        if (errors.address) setErrors({});
+                        if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }));
                       }}
                       placeholder="Enter your full delivery address..."
                       rows={2}
@@ -211,6 +274,28 @@ const CartPanel = ({
                       {paymentOptions.find((o) => o.id === paymentMethod)?.desc}
                     </p>
                   </div>
+
+                  {/* Card details (only when card selected) */}
+                  <AnimatePresence initial={false}>
+                    {paymentMethod === "card" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <CardDetailsForm
+                          value={card}
+                          onChange={(c) => {
+                            setCard(c);
+                            if (errors.card) setErrors((prev) => ({ ...prev, card: undefined }));
+                          }}
+                          errors={errors.card ?? {}}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="p-6 border-t border-border space-y-4">

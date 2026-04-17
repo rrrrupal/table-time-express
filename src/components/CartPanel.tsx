@@ -229,7 +229,7 @@ const CartPanel = ({
                       value={address}
                       onChange={(e) => {
                         setAddress(e.target.value);
-                        if (errors.address) setErrors({});
+                        if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }));
                       }}
                       placeholder="Enter your full delivery address..."
                       rows={2}
@@ -274,6 +274,28 @@ const CartPanel = ({
                       {paymentOptions.find((o) => o.id === paymentMethod)?.desc}
                     </p>
                   </div>
+
+                  {/* Card details (only when card selected) */}
+                  <AnimatePresence initial={false}>
+                    {paymentMethod === "card" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <CardDetailsForm
+                          value={card}
+                          onChange={(c) => {
+                            setCard(c);
+                            if (errors.card) setErrors((prev) => ({ ...prev, card: undefined }));
+                          }}
+                          errors={errors.card ?? {}}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="p-6 border-t border-border space-y-4">

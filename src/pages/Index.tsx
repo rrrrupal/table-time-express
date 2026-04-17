@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import CategoryFilter from "@/components/CategoryFilter";
 import MenuItemCard from "@/components/MenuItemCard";
-import CartPanel, { PaymentMethod } from "@/components/CartPanel";
+import CartPanel, { CheckoutPayload } from "@/components/CartPanel";
 import OrderConfirmation from "@/components/OrderConfirmation";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/hooks/useCart";
@@ -35,7 +35,7 @@ const Index = () => {
     toast.success(`${item.name} added to cart`, { duration: 1500 });
   };
 
-  const handleCheckout = async (address: string, paymentMethod: PaymentMethod) => {
+  const handleCheckout = async ({ address, paymentMethod, card }: CheckoutPayload) => {
     if (!user) {
       setCartOpen(false);
       toast.info("Please sign in to place an order");
@@ -45,6 +45,11 @@ const Index = () => {
 
     setPlacingOrder(true);
     try {
+      // Build payment note — never store full card details
+      const paymentNote = card
+        ? `Payment: card (${card.brand} •••• ${card.last4})`
+        : `Payment: ${paymentMethod}`;
+
       // Create order with address and payment method
       const { data: order, error: orderError } = await supabase
         .from("orders")
@@ -53,7 +58,7 @@ const Index = () => {
           total_amount: cart.total + 3.99,
           delivery_fee: 3.99,
           delivery_address: address,
-          notes: `Payment: ${paymentMethod}`,
+          notes: paymentNote,
         })
         .select()
         .single();

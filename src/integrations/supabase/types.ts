@@ -54,33 +54,42 @@ export type Database = {
       }
       orders: {
         Row: {
+          card_brand: string | null
+          card_last4: string | null
           created_at: string
           delivery_address: string | null
           delivery_fee: number
           id: string
           notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          card_brand?: string | null
+          card_last4?: string | null
           created_at?: string
           delivery_address?: string | null
           delivery_fee?: number
           id?: string
           notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
           status?: Database["public"]["Enums"]["order_status"]
           total_amount: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          card_brand?: string | null
+          card_last4?: string | null
           created_at?: string
           delivery_address?: string | null
           delivery_fee?: number
           id?: string
           notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           updated_at?: string
@@ -129,6 +138,7 @@ export type Database = {
         | "ready"
         | "delivered"
         | "cancelled"
+      payment_method: "card" | "cash" | "wallet"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -257,6 +267,7 @@ export const Constants = {
   public: {
     Enums: {
       order_status: ["pending", "preparing", "ready", "delivered", "cancelled"],
+      payment_method: ["card", "cash", "wallet"],
     },
   },
 } as const

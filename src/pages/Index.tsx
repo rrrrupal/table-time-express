@@ -45,12 +45,7 @@ const Index = () => {
 
     setPlacingOrder(true);
     try {
-      // Build payment note — never store full card details
-      const paymentNote = card
-        ? `Payment: card (${card.brand} •••• ${card.last4})`
-        : `Payment: ${paymentMethod}`;
-
-      // Create order with address and payment method
+      // Create order with address and structured payment fields
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -58,7 +53,9 @@ const Index = () => {
           total_amount: cart.total + 3.99,
           delivery_fee: 3.99,
           delivery_address: address,
-          notes: paymentNote,
+          payment_method: paymentMethod,
+          card_brand: card?.brand ?? null,
+          card_last4: card?.last4 ?? null,
         })
         .select()
         .single();

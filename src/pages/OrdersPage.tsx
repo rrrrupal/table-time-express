@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Clock, Package, XCircle } from "lucide-react";
+import { ArrowLeft, Clock, Package, XCircle, CreditCard, Wallet, Banknote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -151,6 +151,34 @@ const OrdersPage = () => {
                         ))}
                       </div>
                     )}
+
+                    {/* Payment info */}
+                    <div className="flex items-center gap-2 mb-3 text-xs font-body text-muted-foreground">
+                      {order.payment_method === "card" ? (
+                        <>
+                          <CreditCard size={14} />
+                          <span>
+                            Paid with{" "}
+                            <span className="capitalize text-foreground font-medium">
+                              {order.card_brand || "card"}
+                            </span>
+                            {order.card_last4 && (
+                              <> •••• <span className="text-foreground font-medium">{order.card_last4}</span></>
+                            )}
+                          </span>
+                        </>
+                      ) : order.payment_method === "wallet" ? (
+                        <>
+                          <Wallet size={14} />
+                          <span>Paid with <span className="text-foreground font-medium">Wallet</span></span>
+                        </>
+                      ) : (
+                        <>
+                          <Banknote size={14} />
+                          <span>Cash on delivery</span>
+                        </>
+                      )}
+                    </div>
 
                     <div className="space-y-1">
                       {order.order_items?.map((item: any) => (

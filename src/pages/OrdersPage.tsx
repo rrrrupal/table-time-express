@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,8 @@ const OrdersPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+
 
   const handleCancel = async (orderId: string) => {
     setCancellingId(orderId);
@@ -59,6 +61,12 @@ const OrdersPage = () => {
     },
     enabled: !!user,
   });
+
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    if (paymentFilter === "all") return orders;
+    return orders.filter((order: any) => order.payment_method === paymentFilter);
+  }, [orders, paymentFilter]);
 
   useEffect(() => {
     if (!user) return;
@@ -107,9 +115,38 @@ const OrdersPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-              {orders.map((order) => {
+          <>
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto scrollbar-hide">
+              {[
+                { id: "all", label: "All" },
+                { id: "card", label: "Card", icon: CreditCard },
+                { id: "wallet", label: "Wallet", icon: Wallet },
+                { id: "cash", label: "Cash", icon: Banknote },
+              ].map((f) => (
+                <motion.button
+                  key={f.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setPaymentFilter(f.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-body font-medium whitespace-nowrap transition-colors ${
+                    paymentFilter === f.id
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {f.icon && <f.icon size={14} />}
+                  {f.label}
+                </motion.button>
+              ))}
+            </div>
+
+            {!filteredOrders?.length ? (
+              <div className="text-center py-12">
+                <p className="font-body text-muted-foreground">No {paymentFilter !== "all" ? paymentFilter : ""} orders found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <AnimatePresence mode="popLayout">
+                  {filteredOrders.map((order) => {
                 const currentStepIndex = statusSteps.indexOf(order.status);
                 const isCancelled = order.status === "cancelled";
 
@@ -210,8 +247,10 @@ const OrdersPage = () => {
             </AnimatePresence>
           </div>
         )}
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
   );
 };
 

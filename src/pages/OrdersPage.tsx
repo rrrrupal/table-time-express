@@ -251,6 +251,7 @@ const OrdersPage = () => {
     )}
   </div>
 </div>
+  );
 };
 
 export default OrdersPage;

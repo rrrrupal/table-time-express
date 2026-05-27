@@ -115,9 +115,38 @@ const OrdersPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            <AnimatePresence mode="popLayout">
-              {orders.map((order) => {
+          <>
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto scrollbar-hide">
+              {[
+                { id: "all", label: "All" },
+                { id: "card", label: "Card", icon: CreditCard },
+                { id: "wallet", label: "Wallet", icon: Wallet },
+                { id: "cash", label: "Cash", icon: Banknote },
+              ].map((f) => (
+                <motion.button
+                  key={f.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setPaymentFilter(f.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-body font-medium whitespace-nowrap transition-colors ${
+                    paymentFilter === f.id
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {f.icon && <f.icon size={14} />}
+                  {f.label}
+                </motion.button>
+              ))}
+            </div>
+
+            {!filteredOrders?.length ? (
+              <div className="text-center py-12">
+                <p className="font-body text-muted-foreground">No {paymentFilter !== "all" ? paymentFilter : ""} orders found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <AnimatePresence mode="popLayout">
+                  {filteredOrders.map((order) => {
                 const currentStepIndex = statusSteps.indexOf(order.status);
                 const isCancelled = order.status === "cancelled";
 

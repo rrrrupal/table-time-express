@@ -247,9 +247,10 @@ const OrdersPage = () => {
             </AnimatePresence>
           </div>
         )}
-      </div>
-    </div>
-  );
+      </>
+    )}
+  </div>
+</div>
 };
 
 export default OrdersPage;

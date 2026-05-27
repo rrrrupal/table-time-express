@@ -29,6 +29,20 @@ const OrdersPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+
+  const paymentFilters = [
+    { id: "all", label: "All" },
+    { id: "card", label: "Card", icon: CreditCard },
+    { id: "wallet", label: "Wallet", icon: Wallet },
+    { id: "cash", label: "Cash", icon: Banknote },
+  ];
+
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    if (paymentFilter === "all") return orders;
+    return orders.filter((order: any) => order.payment_method === paymentFilter);
+  }, [orders, paymentFilter]);
 
   const handleCancel = async (orderId: string) => {
     setCancellingId(orderId);

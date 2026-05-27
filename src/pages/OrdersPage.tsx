@@ -62,6 +62,12 @@ const OrdersPage = () => {
     enabled: !!user,
   });
 
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    if (paymentFilter === "all") return orders;
+    return orders.filter((order: any) => order.payment_method === paymentFilter);
+  }, [orders, paymentFilter]);
+
   useEffect(() => {
     if (!user) return;
 

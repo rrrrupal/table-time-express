@@ -72,7 +72,7 @@ const OrdersPage = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel("orders-realtime")
+      .channel(`orders-realtime:${user.id}`, { config: { private: true } })
       .on(
         "postgres_changes",
         {
